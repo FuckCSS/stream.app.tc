@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — StreamApp</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <header id="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="logo">
+        <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="8" fill="#6366f1"/>
+          <polygon points="12,9 24,16 12,23" fill="white"/>
+        </svg>
+        <span class="logo-text">StreamApp</span>
+      </a>
+      <nav>
+        <a href="about.html" class="nav-link active">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col items-center px-4 py-16">
+    <div class="about-container">
+
+      <h1 class="about-title">About StreamApp</h1>
+
+      <div class="about-card">
+        <h2 class="about-section-title">What is StreamApp?</h2>
+        <p>StreamApp is a simple, no-frills frontend for finding and watching movies and TV shows. Search for any title, pick a server, and start watching — that's it. No accounts, no subscriptions, no noise.</p>
+      </div>
+
+      <div class="about-card">
+        <h2 class="about-section-title">Movie & TV Data</h2>
+        <p>All metadata — titles, posters, descriptions, and release years — is sourced from <a href="https://www.themoviedb.org/" target="_blank" rel="noopener" class="about-link">The Movie Database (TMDB)</a>. TMDB is a community-built movie and TV database. StreamApp is not affiliated with or endorsed by TMDB.</p>
+        <div class="tmdb-badge">
+          <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="TMDB Logo" class="tmdb-logo" />
+          <span>This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
+        </div>
+      </div>
+
+      <div class="about-card">
+        <h2 class="about-section-title">Video Playback</h2>
+        <p>StreamApp does not host any video content. When you click "Open in New Tab", you are redirected to an external third-party video provider. StreamApp has no control over the content, availability, or quality of those external sources.</p>
+        <p class="mt-3">We recommend installing <a href="https://ublockorigin.com/" target="_blank" rel="noopener" class="about-link">uBlock Origin</a> in your browser for a cleaner experience on external sites.</p>
+      </div>
+
+      <div class="about-card">
+        <h2 class="about-section-title">Available Servers</h2>
+        <ul class="server-list">
+          <li><span class="server-name">Rakan</span> — Best overall quality</li>
+          <li><span class="server-name">Bard</span> — Good for new releases</li>
+          <li><span class="server-name">Xayah</span> — Alternative for new releases</li>
+          <li><span class="server-name">Ekko</span> — 4K quality</li>
+          <li><span class="server-name">Naafiri</span> — 4K quality (alternative)</li>
+        </ul>
+        <p class="mt-3 text-sm text-gray-400">If one server doesn't work, try another. Availability varies by title.</p>
+      </div>
+
+      <div class="about-card">
+        <h2 class="about-section-title">Disclaimer</h2>
+        <p class="text-gray-400 text-sm">StreamApp is a personal project built for educational and informational purposes. It does not store, distribute, or host any media files. All video content is served by external providers. Use at your own discretion.</p>
+      </div>
+
+      <div class="about-back">
+        <a href="index.html" class="btn-primary inline-flex items-center gap-2">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+            <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Back to Search
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span class="footer-logo">StreamApp</span>
+      <span class="footer-copy">Movie &amp; TV data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDB</a>. Video served via external providers.</span>
+    </div>
+  </footer>
+
+</body>
+</html>

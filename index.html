@@ -3,54 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StreamApp — Watch Movies &amp; TV</title>
+  <title>StreamApp — Watch Movies & TV</title>
   <link rel="stylesheet" href="css/styles.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col">
+<body>
 
-  <!-- Navbar -->
-  <header id="navbar">
+  <!-- ===== NAVBAR ===== -->
+  <nav id="navbar">
     <div class="navbar-inner">
       <a href="#/" class="logo">
-        <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="32" height="32" rx="8" fill="#6366f1"/>
-          <polygon points="12,9 24,16 12,23" fill="white"/>
-        </svg>
         <span class="logo-text">StreamApp</span>
       </a>
-      <nav>
+      <div style="display:flex;gap:0.25rem;align-items:center;">
+        <a href="#/discover" id="nav-discover" class="nav-link">Discover</a>
         <a href="about.html" class="nav-link">About</a>
-      </nav>
+      </div>
     </div>
-  </header>
+  </nav>
 
-  <!-- App Shell — JS swaps content here -->
-  <main id="app" class="flex-1 flex flex-col items-center px-4">
+  <!-- ===== MAIN WRAPPER ===== -->
+  <main style="display:flex;flex-direction:column;align-items:center;padding:0 1rem;min-height:calc(100vh - 64px);">
 
-    <!-- ========== SEARCH VIEW (default) ========== -->
-    <div id="view-search">
+    <!-- ===== VIEW: SEARCH ===== -->
+    <div id="view-search" style="width:100%;display:flex;flex-direction:column;align-items:center;">
 
-      <section class="search-hero">
+      <div class="search-hero">
         <h1 class="search-title">What do you want to watch?</h1>
-        <p class="search-subtitle">Search millions of movies and TV shows</p>
-        <form id="search-form" class="search-form" autocomplete="off">
+        <p class="search-subtitle">
+          Search movies and TV shows, or
+          <a href="#/discover" style="color:#6366f1;font-weight:500;transition:color 0.15s;">browse &amp; discover →</a>
+        </p>
+        <form id="search-form" class="search-form" role="search">
           <div class="search-input-wrap">
-            <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="9" cy="9" r="6" stroke="#6b7280" stroke-width="1.5"/>
-              <path d="M13.5 13.5L17 17" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round"/>
+            <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="#4b5563" stroke-width="1.75">
+              <circle cx="9" cy="9" r="6"/><path d="M15 15l-3.5-3.5" stroke-linecap="round"/>
             </svg>
-            <input type="text" id="search-input" class="search-input" placeholder="Search movies, TV shows..." spellcheck="false" />
+            <input
+              id="search-input"
+              class="search-input"
+              type="search"
+              placeholder="Search movies, TV shows…"
+              autocomplete="off"
+              aria-label="Search query"
+            />
             <button type="submit" class="search-btn">Search</button>
           </div>
         </form>
-      </section>
+      </div>
 
-      <section id="results-section" class="results-section hidden">
-        <div id="results-header" class="results-header">
-          <span id="results-count" class="results-count"></span>
+      <div id="state-loading" class="state-message hidden" aria-live="polite">
+        <div class="spinner"></div>
+        <p>Searching…</p>
+      </div>
+      <div id="state-empty" class="state-message hidden" aria-live="polite">
+        <p>No results found. Try a different title.</p>
+      </div>
+      <div id="state-error" class="state-message hidden" aria-live="assertive">
+        <p id="error-text">Something went wrong.</p>
+      </div>
+
+      <section id="results-section" class="results-section hidden" aria-label="Search results">
+        <div class="results-header">
+          <p id="results-count" class="results-count"></p>
         </div>
         <div id="results-grid" class="results-grid"></div>
         <div id="load-more-wrap" class="load-more-wrap hidden">
@@ -58,128 +72,148 @@
         </div>
       </section>
 
-      <div id="state-empty" class="state-message hidden">
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="state-icon">
-          <circle cx="32" cy="32" r="28" stroke="#374151" stroke-width="2"/>
-          <path d="M22 32h20M32 22v20" stroke="#374151" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <p>No results found. Try a different search.</p>
-      </div>
-      <div id="state-loading" class="state-message hidden">
-        <div class="spinner"></div>
-        <p>Searching...</p>
-      </div>
-      <div id="state-error" class="state-message hidden">
-        <p id="error-text">Something went wrong. Please try again.</p>
-      </div>
-
     </div>
-    <!-- END view-search -->
 
-    <!-- ========== MEDIA VIEW (movie or TV) ========== -->
+    <!-- ===== VIEW: MEDIA ===== -->
     <div id="view-media" class="view-media hidden">
 
-      <!-- Back link -->
+      <div id="ublock-banner" class="ublock-banner hidden">
+        <span>⚠️ For the best experience, use <strong>uBlock Origin</strong> to block ads and pop-ups.</span>
+        <button id="ublock-dismiss" class="ublock-dismiss" aria-label="Dismiss">✕</button>
+      </div>
+
       <div class="media-back-row">
-        <a href="#/" id="back-link" class="back-link">
-          <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M13 4L7 10l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Back to results
-        </a>
+        <a href="#/" class="back-link">← Back to Search</a>
       </div>
 
-      <!-- uBlock warning banner (dismissible) -->
-      <div id="ublock-banner" class="ublock-banner">
-        <svg class="warning-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 2L18.66 17H1.34L10 2Z" stroke="#f59e0b" stroke-width="1.5" stroke-linejoin="round"/>
-          <path d="M10 8v4" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="10" cy="14.5" r="0.75" fill="#f59e0b"/>
-        </svg>
-        <span>Some sources may not work correctly without an ad blocker. We recommend <a href="https://ublockorigin.com" target="_blank" rel="noopener" class="ublock-link">uBlock Origin</a>.</span>
-        <button id="ublock-dismiss" class="ublock-dismiss" aria-label="Dismiss">&times;</button>
-      </div>
-
-      <!-- Media Header -->
       <div class="media-header">
-        <img id="media-poster" src="" alt="" class="media-poster" />
-        <div id="media-poster-ph" class="media-poster-ph hidden"></div>
+        <div style="flex-shrink:0;">
+          <img id="media-poster" class="media-poster hidden" alt="" />
+          <div id="media-poster-ph" class="media-poster-ph hidden"></div>
+        </div>
         <div class="media-meta">
-          <div class="modal-badge-row">
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
             <span id="media-badge" class="modal-badge"></span>
             <span id="media-year" class="modal-year"></span>
             <span id="media-rating" class="media-rating"></span>
-            <span id="media-genres" class="media-genres"></span>
           </div>
-          <h1 id="media-title" class="media-title"></h1>
+          <div id="media-genres" class="media-genres"></div>
+          <h2 id="media-title" class="media-title"></h2>
           <p id="media-overview" class="media-overview"></p>
         </div>
       </div>
 
-      <!-- Source selector row -->
-      <div class="source-row">
-        <div class="server-group source-row-group">
-          <label for="media-source-select">Source</label>
-          <select id="media-source-select" class="server-select">
-            <option value="alpha">Alpha (VidSrc.cc v2)</option>
-            <option value="bravo">Bravo (VidSrc.cc v3)</option>
-            <option value="charlie">Charlie (MoviesAPI Club)</option>
-            <option value="delta">Delta (MoviesAPI To)</option>
-            <option value="echo">Echo (vidsrc-embed.ru)</option>
-            <option value="foxtrot">Foxtrot (vidsrc-embed.su)</option>
-            <option value="golf">Golf (vidsrcme.su)</option>
-            <option value="hotel">Hotel (vsrc.su)</option>
-            <option value="india">India (Videasy — Default)</option>
-            <option value="juliet">Juliet (Videasy — Netflix Skin)</option>
-            <option value="kilo">Kilo (vidfast.pro)</option>
-            <option value="lima">Lima (vidfast.in)</option>
-            <option value="mike">Mike (vidfast.io)</option>
-            <option value="november">November (vidfast.me)</option>
-            <option value="oscar">Oscar (vidfast.net)</option>
-            <option value="papa">Papa (vidfast.pm)</option>
-            <option value="quebec">Quebec (vidfast.xyz)</option>
-            <option value="romeo">Romeo (VidLink — Default)</option>
-            <option value="sierra">Sierra (VidLink — JW Player)</option>
-          </select>
-        </div>
-        <button id="newtab-btn" class="btn-secondary newtab-btn">
-          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" style="flex-shrink:0">
-            <path d="M11 3H17V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M17 3L9 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M9 5H4C3.44772 5 3 5.44772 3 6V16C3 16.5523 3.44772 17 4 17H14C14.5523 17 15 16.5523 15 16V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          Open in New Tab
-        </button>
-      </div>
-
-      <!-- Player -->
       <div class="player-section">
+        <div class="source-row">
+          <div class="source-row-group server-group">
+            <label for="media-source-select">Server</label>
+            <select id="media-source-select" class="server-select">
+              <option value="alpha">Alpha (Recommended)</option>
+              <option value="bravo">Bravo</option>
+              <option value="charlie">Charlie</option>
+              <option value="delta">Delta</option>
+              <option value="echo">Echo</option>
+              <option value="foxtrot">Foxtrot</option>
+              <option value="golf">Golf</option>
+              <option value="hotel">Hotel</option>
+              <option value="india">India</option>
+              <option value="juliet">Juliet</option>
+              <option value="kilo">Kilo</option>
+              <option value="lima">Lima</option>
+              <option value="mike">Mike</option>
+              <option value="november">November</option>
+              <option value="oscar">Oscar</option>
+              <option value="papa">Papa</option>
+              <option value="quebec">Quebec</option>
+              <option value="romeo">Romeo</option>
+              <option value="sierra">Sierra</option>
+            </select>
+          </div>
+          <button id="newtab-btn" class="btn-secondary newtab-btn">↗ New Tab</button>
+        </div>
+
         <div class="iframe-wrap">
-          <div class="iframe-spinner" id="iframe-spinner">
+          <div id="iframe-spinner" class="iframe-spinner">
             <div class="spinner"></div>
           </div>
-          <iframe id="player-iframe" src="" frameborder="0" allowfullscreen
-            allow="encrypted-media; autoplay; fullscreen; picture-in-picture"
-            title="Video Player"></iframe>
+          <iframe
+            id="player-iframe"
+            allowfullscreen
+            allow="autoplay; fullscreen; picture-in-picture"
+            referrerpolicy="no-referrer"
+            title="Media Player"
+          ></iframe>
         </div>
       </div>
 
-      <!-- TV: Season Tabs + Episode Grid -->
       <div id="tv-section" class="tv-section hidden">
         <div class="season-tabs-wrap">
           <div id="season-tabs" class="season-tabs"></div>
         </div>
-        <div id="episodes-loading" class="state-message hidden">
-          <div class="spinner"></div>
-          <p>Loading episodes...</p>
-        </div>
+        <div id="episodes-loading" class="state-message hidden"><div class="spinner"></div></div>
         <div id="episode-grid" class="episode-grid"></div>
       </div>
 
     </div>
-    <!-- END view-media -->
+
+    <!-- ===== VIEW: DISCOVER ===== -->
+    <div id="view-discover" class="view-discover hidden">
+
+      <div class="discover-header-row">
+        <h2 class="discover-title">Discover</h2>
+      </div>
+
+      <div class="genre-chips-wrap">
+        <div id="genre-chips" class="genre-chips"></div>
+      </div>
+
+      <div class="discover-section">
+        <div class="discover-section-header">
+          <span class="discover-section-title">🔥 Trending This Week</span>
+          <a href="#/browse/trending" class="discover-view-all">View All →</a>
+        </div>
+        <div class="discover-row-wrap">
+          <div id="row-trending" class="discover-row"></div>
+        </div>
+      </div>
+
+      <div class="discover-section">
+        <div class="discover-section-header">
+          <span class="discover-section-title">⭐ Top Rated Movies</span>
+          <a href="#/browse/top-movies" class="discover-view-all">View All →</a>
+        </div>
+        <div class="discover-row-wrap">
+          <div id="row-top-movies" class="discover-row"></div>
+        </div>
+      </div>
+
+      <div class="discover-section">
+        <div class="discover-section-header">
+          <span class="discover-section-title">📺 Popular TV Shows</span>
+          <a href="#/browse/popular-tv" class="discover-view-all">View All →</a>
+        </div>
+        <div class="discover-row-wrap">
+          <div id="row-popular-tv" class="discover-row"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== VIEW: BROWSE ===== -->
+    <div id="view-browse" class="view-browse hidden">
+      <div class="browse-back-row">
+        <a href="#/discover" class="back-link">← Back to Discover</a>
+      </div>
+      <h2 id="browse-title" class="browse-title"></h2>
+      <div id="browse-loading" class="state-message hidden"><div class="spinner"></div></div>
+      <div id="browse-grid" class="results-grid"></div>
+      <div id="browse-load-more-wrap" class="load-more-wrap hidden">
+        <button id="browse-load-more-btn" class="load-more-btn">Load More</button>
+      </div>
+    </div>
 
   </main>
 
-  <!-- Footer -->
   <footer class="site-footer">
     <div class="footer-inner">
       <span class="footer-logo">StreamApp</span>

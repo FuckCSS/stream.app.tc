@@ -1430,3 +1430,192 @@ input, select { font-family: inherit; }
     gap: 0.75rem; /* Slightly tighter gap for small screens */
   }
 }
+/* ============================================================
+   StreamApp — Discover, Browse & Genre additions
+   Append to the END of css/styles.css
+   ============================================================ */
+
+/* ---------- Hero discover link ---------- */
+.hero-sub {
+  font-size: 0.9375rem;
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+.hero-discover-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.hero-discover-link:hover { color: #a5b4fc; }
+
+/* ---------- Discover View ---------- */
+.view-discover {
+  width: 100%;
+  max-width: 1152px;
+  padding-bottom: 3rem;
+}
+
+.discover-header-row {
+  padding: 2rem 0 0.75rem;
+}
+
+.discover-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f9fafb;
+}
+
+/* ---------- Genre Chips ---------- */
+.genre-chips-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin-bottom: 2rem;
+  padding-bottom: 0.25rem;
+}
+.genre-chips-wrap::-webkit-scrollbar { display: none; }
+
+.genre-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.genre-chip {
+  display: inline-block;
+  background: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  color: #9ca3af;
+  padding: 0.4rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+.genre-chip:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #a5b4fc;
+}
+
+/* ---------- Discover Section ---------- */
+.discover-section {
+  margin-bottom: 2.5rem;
+}
+
+.discover-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+}
+
+.discover-section-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #f3f4f6;
+  letter-spacing: -0.01em;
+}
+
+.discover-view-all {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #6366f1;
+  text-decoration: none;
+  transition: color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.discover-view-all:hover { color: #a5b4fc; }
+
+/* ---------- Horizontal Scroll Row ---------- */
+.discover-row-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: 0 -0.25rem;
+  padding: 0.25rem 0.25rem 0.5rem;
+}
+.discover-row-wrap::-webkit-scrollbar { display: none; }
+
+.discover-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* ---------- Discover Card ---------- */
+.disc-card {
+  flex-shrink: 0;
+  width: 130px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.disc-card:hover { transform: translateY(-3px); }
+
+.disc-card-poster {
+  position: relative;
+  aspect-ratio: 2/3;
+  border-radius: 0.625rem;
+  overflow: hidden;
+  background: #111827;
+  border: 1px solid rgba(55, 65, 81, 0.4);
+  margin-bottom: 0.4rem;
+}
+.disc-card-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s;
+}
+.disc-card:hover .disc-card-poster img { transform: scale(1.04); }
+
+.disc-card-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.disc-card-year {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  margin-top: 0.15rem;
+}
+
+/* ---------- Browse View ---------- */
+.view-browse {
+  width: 100%;
+  max-width: 1152px;
+  padding-bottom: 3rem;
+}
+
+.browse-back-row {
+  padding: 1.5rem 0 0.5rem;
+}
+
+.browse-title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f9fafb;
+  margin-bottom: 1.25rem;
+}
+
+/* ---------- Mobile adjustments ---------- */
+@media (max-width: 600px) {
+  .discover-title  { font-size: 1.25rem; }
+  .disc-card       { width: 110px; }
+  .genre-chips     { flex-wrap: wrap; }
+  .discover-section-title { font-size: 0.9375rem; }
+  .browse-title    { font-size: 1.125rem; }
+}

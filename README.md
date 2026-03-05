@@ -1,17 +1,9 @@
 # FluxusTV
 
-A simple frontend to search movies and TV shows. Uses TMDB API for metadata. Videos open on external providers.
 
-## Features
-- Search movies & TV shows
-- Modal info + poster
-- Server selection
-- Fully static, no accounts
-
-## Usage
-1. Open `index.html` in a browser
-2. Search for a title
-3. Click "Open in New Tab" to watch
-
-   
-# https://stream.app.tc
+## https://s1.fluxus.org
+## https://s2.fluxus.org
+## https://s3.fluxus.org
+## https://s4.fluxus.org
+## https://tv.fluxus.org
+## https://fluxustv.vercel.app

@@ -77,22 +77,29 @@ let activeMediaId  = null;
 let activeType     = null;
 let activeSeason   = 1;
 let activeEpisode  = 1;
+let activeTitle    = '';
+let activeYear     = '';
 
 // Browse state
 let browseCategory   = null;
 let browsePage       = 1;
 let browseTotalPages = 1;
 
+// ---- Server helpers ----
+function getServerLetter(serverName) {
+  return (serverName || '').charAt(0);
+}
+function getServerFromLetter(letter) {
+  return Object.keys(SOURCES).find(k => k.charAt(0) === letter) || null;
+}
+
 // ---- localStorage helpers ----
 function getSavedSource() {
   let source = localStorage.getItem('sa_source');
-
-  // If they have no source saved, OR if they are still on the old 'alpha'
   if (!source || source === 'alpha') {
     source = 'november';
     localStorage.setItem('sa_source', 'november');
   }
-
   return source;
 }
 function saveSource(v)       { localStorage.setItem('sa_source', v); }
@@ -142,6 +149,7 @@ const cwSection         = document.getElementById('cw-section');
 const cwRow             = document.getElementById('cw-row');
 const ublockBanner      = document.getElementById('ublock-banner');
 const ublockDismiss     = document.getElementById('ublock-dismiss');
+const newContentBanner  = document.getElementById('new-content-banner');
 const mediaPoster       = document.getElementById('media-poster');
 const mediaPosterPh     = document.getElementById('media-poster-ph');
 const mediaBadge        = document.getElementById('media-badge');
@@ -152,6 +160,9 @@ const mediaTitle        = document.getElementById('media-title');
 const mediaOverview     = document.getElementById('media-overview');
 const sourceSelect      = document.getElementById('media-source-select');
 const newtabBtn         = document.getElementById('newtab-btn');
+const downloadBtn       = document.getElementById('download-btn');
+const shareBtn          = document.getElementById('share-btn');
+const reportBtn         = document.getElementById('report-btn');
 const playerIframe      = document.getElementById('player-iframe');
 const iframeSpinner     = document.getElementById('iframe-spinner');
 const tvSection         = document.getElementById('tv-section');
@@ -165,13 +176,59 @@ const browseLoadMoreWrap = document.getElementById('browse-load-more-wrap');
 const browseLoadMoreBtn  = document.getElementById('browse-load-more-btn');
 const browseLoadingEl    = document.getElementById('browse-loading');
 const navDiscover        = document.getElementById('nav-discover');
+// Share modal
+const shareModal        = document.getElementById('share-modal');
+const shareModalClose   = document.getElementById('share-modal-close');
+const shareUrlInput     = document.getElementById('share-url-input');
+const shareCopyBtn      = document.getElementById('share-copy-btn');
+const shareIncludeServer = document.getElementById('share-include-server');
+const shareServerName   = document.getElementById('share-server-name');
+// Report modal
+const reportModal       = document.getElementById('report-modal');
+const reportModalClose  = document.getElementById('report-modal-close');
+const reportDesc        = document.getElementById('report-desc');
+const reportSubmit      = document.getElementById('report-submit');
+const reportCancel      = document.getElementById('report-cancel');
+// Toast
+const toastEl           = document.getElementById('toast');
+
+// ============================================================
+// Toast
+// ============================================================
+let toastTimeout;
+function showToast(msg, duration = 2500) {
+  toastEl.textContent = msg;
+  toastEl.classList.remove('hidden');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toastEl.classList.add('hidden'), duration);
+}
 
 // ============================================================
 // Router
 // ============================================================
+function parseHash() {
+  const raw = window.location.hash || '#/';
+  // Strip leading '#/' then separate path from query
+  const withoutScheme = raw.startsWith('#/') ? raw.slice(2) : raw.slice(1);
+  const qIdx = withoutScheme.indexOf('?');
+  const path     = qIdx >= 0 ? withoutScheme.slice(0, qIdx) : withoutScheme;
+  const queryStr = qIdx >= 0 ? withoutScheme.slice(qIdx + 1) : '';
+  return { parts: path.split('/').filter(Boolean), queryStr };
+}
+
 function route() {
-  const hash  = window.location.hash || '#/';
-  const parts = hash.replace('#/', '').split('/');
+  const { parts, queryStr } = parseHash();
+
+  // Apply server from URL if present (e.g. ?server=n)
+  if (queryStr) {
+    const params = new URLSearchParams(queryStr);
+    const letter = params.get('server');
+    if (letter) {
+      const serverName = getServerFromLetter(letter);
+      if (serverName) saveSource(serverName);
+    }
+  }
+
   hideAllViews();
   if (parts[0] === 'movie' && parts[1]) {
     showMediaView('movie', parts[1]);
@@ -249,11 +306,27 @@ async function showMediaView(type, id, s = 1, e = 1) {
     const detail = await fetchDetail(type, id);
     renderMediaHeader(type, detail);
 
+    // Check if content is newly released (< 4 months old)
+    const releaseDate = type === 'tv' ? detail.first_air_date : detail.release_date;
+    activeTitle = type === 'tv' ? (detail.name || '') : (detail.title || '');
+    activeYear  = releaseDate ? releaseDate.slice(0, 4) : '';
+    if (releaseDate) {
+      const ageMs = Date.now() - new Date(releaseDate).getTime();
+      const ageDays = ageMs / (1000 * 60 * 60 * 24);
+      if (ageDays < 120) {
+        newContentBanner.classList.remove('hidden');
+      } else {
+        newContentBanner.classList.add('hidden');
+      }
+    } else {
+      newContentBanner.classList.add('hidden');
+    }
+
     // Save to Continue Watching
     const cwEntry = {
       id:     id,
       type:   type,
-      title:  type === 'tv' ? detail.name : detail.title,
+      title:  activeTitle,
       poster: detail.poster_path || null,
     };
     if (type === 'tv') {
@@ -270,6 +343,9 @@ async function showMediaView(type, id, s = 1, e = 1) {
       tvSection.classList.add('hidden');
     }
     loadPlayer();
+
+    // Update URL to include current server (silent, no hashchange)
+    updateHash();
   } catch (err) {
     console.error(err);
     mediaTitle.textContent    = 'Failed to load';
@@ -360,7 +436,6 @@ async function loadDiscoverContent() {
   if (discoverLoaded) return;
   discoverLoaded = true;
 
-  // Render genre chips
   genreChips.innerHTML = '';
   GENRES.forEach(g => {
     const chip = document.createElement('a');
@@ -402,6 +477,7 @@ async function loadDiscoverContent() {
     console.error('Discover load error:', err);
   }
 }
+
 // ============================================================
 // Browse (full grid for category/genre)
 // ============================================================
@@ -620,7 +696,6 @@ function renderEpisodes(episodes, highlightEp) {
       activeEpisode = ep.episode_number;
       updateHash();
       loadPlayer();
-      // Update CW with new episode
       const cwList   = getCW();
       const existing = cwList.find(x => String(x.id) === String(activeMediaId) && x.type === 'tv');
       if (existing) {
@@ -640,7 +715,6 @@ function renderEpisodes(episodes, highlightEp) {
 
 // ============================================================
 // Player
-
 // ============================================================
 function buildSrc() {
   const src = SOURCES[sourceSelect.value] || SOURCES.november;
@@ -655,6 +729,7 @@ function loadPlayer() {
 playerIframe.addEventListener('load', () => { iframeSpinner.classList.add('hidden'); });
 sourceSelect.addEventListener('change', () => {
   saveSource(sourceSelect.value);
+  updateHash();
   if (activeMediaId) loadPlayer();
 });
 newtabBtn.addEventListener('click', () => {
@@ -665,15 +740,114 @@ ublockDismiss.addEventListener('click', () => {
   ublockBanner.classList.add('hidden');
 });
 
+// ---- Download button ----
+downloadBtn.addEventListener('click', () => {
+  if (!activeTitle) return;
+  const query = encodeURIComponent((activeTitle + (activeYear ? ' ' + activeYear : '')).trim());
+  window.open(`https://1337x.to/search/${query}/1/`, '_blank', 'noopener,noreferrer');
+});
+
+// ============================================================
+// Share Modal
+// ============================================================
+function buildShareUrl(includeServer) {
+  const base = window.location.origin + window.location.pathname;
+  let hash;
+  if (activeType === 'tv') {
+    hash = `#/tv/${activeMediaId}/${activeSeason}/${activeEpisode}`;
+  } else {
+    hash = `#/movie/${activeMediaId}`;
+  }
+  if (includeServer) {
+    hash += `?server=${getServerLetter(sourceSelect.value)}`;
+  }
+  return base + hash;
+}
+
+function openShareModal() {
+  const serverDisplayName = sourceSelect.options[sourceSelect.selectedIndex].text.replace(' (recommended)', '');
+  shareServerName.textContent = serverDisplayName;
+  shareIncludeServer.checked = true;
+  shareUrlInput.value = buildShareUrl(true);
+  shareModal.classList.remove('hidden');
+  shareUrlInput.select();
+}
+
+shareIncludeServer.addEventListener('change', () => {
+  shareUrlInput.value = buildShareUrl(shareIncludeServer.checked);
+});
+
+shareCopyBtn.addEventListener('click', () => {
+  const url = shareUrlInput.value;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('Link copied!');
+      shareModal.classList.add('hidden');
+    }).catch(() => fallbackCopy(url));
+  } else {
+    fallbackCopy(url);
+  }
+});
+
+function fallbackCopy(text) {
+  shareUrlInput.select();
+  try {
+    document.execCommand('copy');
+    showToast('Link copied!');
+    shareModal.classList.add('hidden');
+  } catch {
+    showToast('Copy failed — select the link manually.');
+  }
+}
+
+shareBtn.addEventListener('click', () => {
+  if (activeMediaId) openShareModal();
+});
+shareModalClose.addEventListener('click', () => shareModal.classList.add('hidden'));
+shareModal.addEventListener('click', (e) => {
+  if (e.target === shareModal) shareModal.classList.add('hidden');
+});
+
+// ============================================================
+// Report Modal
+// ============================================================
+reportBtn.addEventListener('click', () => {
+  reportDesc.value = '';
+  reportModal.classList.remove('hidden');
+  reportDesc.focus();
+});
+reportModalClose.addEventListener('click', () => reportModal.classList.add('hidden'));
+reportCancel.addEventListener('click', () => reportModal.classList.add('hidden'));
+reportModal.addEventListener('click', (e) => {
+  if (e.target === reportModal) reportModal.classList.add('hidden');
+});
+reportSubmit.addEventListener('click', () => {
+  const desc  = reportDesc.value.trim();
+  const title = mediaTitle.textContent || 'Unknown title';
+  const url   = window.location.href;
+  const subject = `FluxusTV Issue: ${title}`;
+  const body    = `${desc ? desc + '\n\n' : ''}Page: ${url}\nTitle: ${title}`;
+  window.open(
+    `mailto:izaak@cc.cc?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
+    '_self'
+  );
+  reportModal.classList.add('hidden');
+});
+
 // ============================================================
 // Hash helpers
 // ============================================================
 function updateHash() {
+  if (!activeMediaId) return;
+  const serverLetter = getServerLetter(sourceSelect.value);
+  let newHash;
   if (activeType === 'tv') {
-    window.location.hash = `#/tv/${activeMediaId}/${activeSeason}/${activeEpisode}`;
+    newHash = `#/tv/${activeMediaId}/${activeSeason}/${activeEpisode}?server=${serverLetter}`;
   } else {
-    window.location.hash = `#/movie/${activeMediaId}`;
+    newHash = `#/movie/${activeMediaId}?server=${serverLetter}`;
   }
+  // replaceState updates URL silently without triggering hashchange
+  history.replaceState(null, '', newHash);
 }
 
 // ============================================================
@@ -772,10 +946,14 @@ function showState(state) {
 }
 
 // ============================================================
-// Escape key
+// Escape key — close modals or navigate back
 // ============================================================
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && activeMediaId) { window.location.hash = '#/'; }
+  if (e.key === 'Escape') {
+    if (!shareModal.classList.contains('hidden')) { shareModal.classList.add('hidden'); return; }
+    if (!reportModal.classList.contains('hidden')) { reportModal.classList.add('hidden'); return; }
+    if (activeMediaId) { window.location.hash = '#/'; }
+  }
 });
 
 // ============================================================
